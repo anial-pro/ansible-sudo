@@ -1,0 +1,49 @@
+---
+# tasks file for ansible-sudo
+
+- name: "Ensure sudo is installed"
+  package:
+    name: "sudo"
+    state: "present"
+  when: sudo_installed
+
+- name: "Remove unauthorized sudoers files"
+  file:
+    path: "/etc/sudoers.d"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  when: sudo_remove_unauthorized
+
+- name: "Creating sudoers files"
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers
+    owner: root
+    group: root
+    mode: 0440
+    validate: 'visudo -cf %s'
+  when: sudo_create_sudoers
+
+- block:
+  - name: "Creating sudoers.d directory"
+    file:
+      path: "/etc/sudoers.d"
+      owner: root
+      group: root
+      mode: 0755
+      state: directory
+
+  - name: "Create sudoers.d files"
+    template:
+      src: "sudoers.d/{{ item.path }}"
+      dest: "/etc/sudoers.d/{{ item.path }}"
+      mode: 0440
+      owner: root
+      group: root
+      validate: "/usr/sbin/visudo -cf %s"
+    loop: "{{ query('filetree', '../templates/sudoers.d/') }}"
+    when: item is defined
+
+  when: sudo_create_sudoersd | bool

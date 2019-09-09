@@ -1,0 +1,8 @@
+---
+# defaults file for ansible-sudo
+
+sudo_installed:                        True
+sudo_create_sudoers:                   True
+sudo_create_sudo_group:                False
+sudo_create_sudoersd:                  False
+sudo_remove_unauthorized:              False
